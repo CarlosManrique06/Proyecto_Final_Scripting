@@ -7,7 +7,7 @@ public class EnemyController : MonoBehaviour
 {
    
 
-    public float enemyHealth;
+   
     
  
     public float EnemyHitStrengthX;
@@ -15,34 +15,6 @@ public class EnemyController : MonoBehaviour
     public float EnemyHitTime;
     public float enemyDamage;
 
-    
-
-    
-
-    // Start is called before the first frame update
-    void Start()
-    {
-      
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-        if (enemyHealth <= 0)
-        {
-            Destroy(gameObject);
-        }
-    }
-
-    public void enemyTakeDamage(float damage)
-    {
-       
-
-        enemyHealth -= damage;
-        
-
-    }
     
 
    
