@@ -32,15 +32,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundRadius;
     [SerializeField] private LayerMask groundLayer;
 
-    //[SerializeField] public ParticleSystem ParticlesCaller;
+  
 
     //public TextMeshProUGUI Health;
 
-    //Particles variables
-   // public Sprite[] hitSprite;
-
-    //public int particlesNumber;
-   // public int particlesSelect;
+ 
 
     [SerializeField] private Animator playerAnimator;
     //Hit Variables Hit
@@ -59,12 +55,12 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        //ParticlesCaller = GetComponentInChildren<ParticleSystem>();
+      
         playerHealth = maxHealth;
         //Health.text = "S a l u d : " + maxHealth;
         jumpClock = jumpTime;
         transform.position = startPosition.position;
-        //var main = ParticlesCaller.main;
+       
     }
 
     // Update is called once per frame
@@ -174,40 +170,24 @@ public class PlayerController : MonoBehaviour
     }
     public void TakeDamage(float damage)
     {
-       // var main = ParticlesCaller.main;
-       // main.maxParticles = particlesNumber;
-       // main.startColor = Color.white;
+      
 
         playerHealth -= damage;
         playerAnimator.SetTrigger("Hit");
       
-        //ParticlesCaller.textureSheetAnimation.SetSprite(0, hitSprite[particlesSelect]);
-
-       // ParticlesCaller.Play();
 
     }
 
     public void AddHealth(float health)
     {
-        //var main = ParticlesCaller.main;
-        //main.startColor = Color.green;
-       // particlesSelect = 3;
-       // ParticlesCaller.textureSheetAnimation.SetSprite(0, hitSprite[particlesSelect]);
+       
         playerHealth += 5;
-       // main.maxParticles = 1;
-
-        //main.startColor = Color.green;
-        //ParticlesCaller.Play();
-
+    
     }
 
     public void DamageButton()
     {
-       // particlesSelect = 0;
-       // var main = ParticlesCaller.main;
-       // ParticlesCaller.textureSheetAnimation.SetSprite(0, hitSprite[particlesSelect]);
-       // main.maxParticles = 3;
-       // particlesSelect = 0;  
+      
         hitTime = 3;
         hitForceX = 5f;
         hitForceY = 2f;
@@ -215,7 +195,6 @@ public class PlayerController : MonoBehaviour
         hitFromRight = true;
 
         playerAnimator.SetTrigger("Hit");
-        //ParticlesCaller.Play();
 
 
     }
