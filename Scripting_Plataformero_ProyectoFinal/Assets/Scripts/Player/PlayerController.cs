@@ -39,6 +39,7 @@ public class PlayerController : MonoBehaviour
  
 
     [SerializeField] private Animator playerAnimator;
+
     //Hit Variables Hit
 
     public float hitTime;
