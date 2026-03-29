@@ -23,7 +23,7 @@ public class EnemyHealth : MonoBehaviour, IDamage
     void Die()
     {
         Debug.Log($"{name} died.");
-        // Play death animation, drop loot, etc.
+        
         Destroy(gameObject);
     }
 }

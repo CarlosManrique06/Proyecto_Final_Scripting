@@ -17,7 +17,7 @@ public class Yoyo : MonoBehaviour
     public int damage = 1;
 
 
-    public string enemyTag = "Enemy";
+    public string enemyTag = "enemy";
 
     public LineRenderer stringRenderer;
 
@@ -68,7 +68,7 @@ public class Yoyo : MonoBehaviour
     {
         if (_state == State.Going)
         {
-            // Move forward
+            // Lanzarlo hacia adelante
             transform.Translate(_direction * speed * Time.deltaTime);
 
             
@@ -105,6 +105,7 @@ public class Yoyo : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
+        //Daño del yoyo
         if (!IsActive) return;
 
         if (other.CompareTag(enemyTag))
