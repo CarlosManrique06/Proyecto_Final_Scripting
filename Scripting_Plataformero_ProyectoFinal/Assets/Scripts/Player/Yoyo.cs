@@ -1,133 +1,195 @@
-using System.Collections;
+using System;
 using UnityEngine;
 
 public class Yoyo : MonoBehaviour
 {
-
-
     public float speed = 14f;
-
-
     public float maxDistance = 5f;
+    public float returnDistance = 0.35f;
 
-
-    public float returnThreshold = 0.3f;
-
+    public float oscillationAmplitude = 0.35f;
+    public float oscillationFrequency = 9f;
 
     public int damage = 1;
-
-
     public string enemyTag = "enemy";
 
-    public LineRenderer stringRenderer;
+    public LineRenderer lineRenderer;
 
+    
+    public bool isActive;
+    public bool isAnchored;
 
-    // State
+    private enum State
+    {
+        Going,
+        Returning,
+        GoingToAnchor,
+        Anchored
+    }
 
-    public bool IsActive { get; private set; }
+    private State currentState;
 
-    private enum State { Going, Returning }
-    private State _state;
-
-    private Transform _owner;
-    private Vector2 _direction;
-    private Vector2 _originPos;
-
-
-    private Rigidbody2D _rb;
-
+    private Transform owner;
+    private Vector2 direction;
+    private Vector2 startPosition;
+    private Vector2 anchorPosition;
+    private float oscillationTime;
+    private Action onAnchorReached;
 
     void Awake()
     {
-        _rb = GetComponent<Rigidbody2D>();
-
-        if (stringRenderer == null)
-            stringRenderer = GetComponent<LineRenderer>();
+        if (lineRenderer == null)
+        {
+            lineRenderer = GetComponent<LineRenderer>();
+        }
     }
 
     void Update()
     {
-        if (!IsActive) return;
+        if (isActive == false)
+        {
+            return;
+        }
 
         Move();
         DrawString();
-        CheckReturn();
     }
 
-
-    public void Launch(Vector2 direction, Transform owner)
+    // Lanzamiento normal
+    public void Launch(Vector2 dir, Transform player)
     {
-        _direction = direction.normalized;
-        _owner = owner;
-        _originPos = transform.position;
-        _state = State.Going;
-        IsActive = true;
+        direction = dir.normalized;
+        owner = player;
+        startPosition = transform.position;
+        oscillationTime = 0f;
+
+        currentState = State.Going;
+        isActive = true;
     }
 
+    // Lanzamiento hacia punto
+    public void LaunchToAnchor(Vector2 target, Transform player, Action callback)
+    {
+        anchorPosition = target;
+        owner = player;
+
+        direction = (target - (Vector2)transform.position).normalized;
+
+        onAnchorReached = callback;
+
+        currentState = State.GoingToAnchor;
+        isActive = true;
+    }
+
+   
+    public void ReturnToOwner()
+    {
+        isAnchored = false;
+        currentState = State.Returning;
+    }
+
+    // Movimiento principal
     void Move()
     {
-        if (_state == State.Going)
+        if (currentState == State.Going)
         {
-            // Lanzarlo hacia adelante
-            transform.Translate(_direction * speed * Time.deltaTime);
+            oscillationTime = oscillationTime + Time.deltaTime;
 
-            
-            float distTravelled = Vector2.Distance(_originPos, transform.position);
-            if (distTravelled >= maxDistance)
-                _state = State.Returning;
+            Vector2 perpendicular = Vector2.Perpendicular(direction);
+            float oscillation = Mathf.Cos(oscillationTime * oscillationFrequency) * oscillationAmplitude * oscillationFrequency;
+
+            Vector2 movement = direction * speed + perpendicular * oscillation;
+
+            transform.Translate(movement * Time.deltaTime, Space.World);
+
+            float distance = Vector2.Distance(startPosition, transform.position);
+
+            if (distance >= maxDistance)
+            {
+                currentState = State.Returning;
+            }
         }
-        else 
+        else if (currentState == State.Returning)
         {
-           
-            Vector2 toOwner = ((Vector2)_owner.position - (Vector2)transform.position).normalized;
-            transform.Translate(toOwner * speed * Time.deltaTime);
+            Vector2 directionToPlayer = ((Vector2)owner.position - (Vector2)transform.position).normalized;
+
+            transform.Translate(directionToPlayer * speed * Time.deltaTime, Space.World);
+
+            float distanceToPlayer = Vector2.Distance(transform.position, owner.position);
+
+            if (distanceToPlayer <= returnDistance)
+            {
+                Deactivate();
+            }
+        }
+        else if (currentState == State.GoingToAnchor)
+        {
+            transform.Translate(direction * speed * Time.deltaTime, Space.World);
+
+            float distanceToTarget = Vector2.Distance(transform.position, anchorPosition);
+
+            if (distanceToTarget <= 0.18f)
+            {
+                transform.position = anchorPosition;
+
+                currentState = State.Anchored;
+                isAnchored = true;
+
+                if (onAnchorReached != null)
+                {
+                    onAnchorReached();
+                }
+            }
+        }
+        else if (currentState == State.Anchored)
+        {
+            transform.position = anchorPosition;
         }
     }
 
-    void CheckReturn()
-    {
-        if (_state != State.Returning) return;
-
-        float dist = Vector2.Distance(transform.position, _owner.position);
-        if (dist <= returnThreshold)
-            Deactivate();
-    }
-
-
+    
     void DrawString()
     {
-        if (stringRenderer == null || _owner == null) return;
+        if (lineRenderer == null || owner == null)
+        {
+            return;
+        }
 
-        stringRenderer.positionCount = 2;
-        stringRenderer.SetPosition(0, _owner.position);
-        stringRenderer.SetPosition(1, transform.position);
+        lineRenderer.positionCount = 2;
+        lineRenderer.SetPosition(0, owner.position);
+        lineRenderer.SetPosition(1, transform.position);
     }
 
+    // Daño a enemigos
     void OnTriggerEnter2D(Collider2D other)
     {
-        //Daño del yoyo
-        if (!IsActive) return;
+        if (isActive == false || isAnchored == true)
+        {
+            return;
+        }
 
         if (other.CompareTag(enemyTag))
         {
-           
-            IDamage damageable = other.GetComponent<IDamage>();
-            if (damageable != null)
-            {
-                damageable.TakeDamage(damage);
-            }
+            IDamage damageComponent = other.GetComponent<IDamage>();
 
-            
-             _state = State.Returning; //Activar o descativar el retorno al golpear un enemigo, lo traspasa si no se pone y si se quita sigue
+            if (damageComponent != null)
+            {
+                damageComponent.TakeDamage(damage);
+            }
+            ReturnToOwner(); // El yoyo regresa al jugador después de golpear a un enemigo, si se quita , el yoyo seguirá su trayectoria normal incluso después de golpear a un enemigo.
         }
     }
 
-
+    
     void Deactivate()
     {
-        IsActive = false;
-        if (stringRenderer != null)
-            stringRenderer.positionCount = 0;
+        isActive = false;
+        isAnchored = false;
+
+        if (lineRenderer != null)
+        {
+            lineRenderer.positionCount = 0;
+        }
 
         Destroy(gameObject);
     }

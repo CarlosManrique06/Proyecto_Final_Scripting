@@ -29,7 +29,7 @@ public class YoyoController : MonoBehaviour
     void TryLaunchYoyo()
     {
         // Un solo yoyo activo a la vez
-        if (activeYoyo != null && activeYoyo.IsActive)
+        if (activeYoyo != null && activeYoyo.isActive)
             return;
 
        
