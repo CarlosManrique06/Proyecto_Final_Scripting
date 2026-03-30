@@ -23,7 +23,10 @@ public class YoyoController : MonoBehaviour
     void Update()
     {
         if (Input.GetKeyDown(attackKey))
+        {
             TryLaunchYoyo();
+        }
+           
     }
 
     void TryLaunchYoyo()

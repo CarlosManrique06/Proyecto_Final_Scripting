@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using UnityEditor.U2D.Animation;
 using NUnit.Framework;
 
 public class PlayerController : MonoBehaviour
