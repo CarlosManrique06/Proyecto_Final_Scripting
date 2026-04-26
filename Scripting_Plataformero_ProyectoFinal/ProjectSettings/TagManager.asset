@@ -5,10 +5,8 @@ TagManager:
   serializedVersion: 3
   tags:
   - enemy
-  - canAbsorb
-  - "ColeccionableDa\xF1o"
-  - Destroy
-  - ColeccionableVida
+  - Collectible
+  - HealthManager
   layers:
   - Default
   - TransparentFX

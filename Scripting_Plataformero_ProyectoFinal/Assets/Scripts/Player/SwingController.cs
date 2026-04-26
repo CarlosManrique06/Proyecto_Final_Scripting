@@ -3,179 +3,95 @@ using UnityEngine;
 
 public class SwingController : MonoBehaviour
 {
-    public GameObject yoyoPrefab;
-
     public KeyCode swingKey = KeyCode.E;
-    
     public KeyCode detachKey = KeyCode.Space;
 
-    // Lista de puntos 
+    public float ropeLength = 3f;
+    public float detachBoost = 1.15f;
+
+    public bool IsSwinging => distanceJoint != null;
+    public bool IsLaunching { get; private set; }
+
     private List<SwingPoint> nearbyPoints = new List<SwingPoint>();
     private int currentIndex;
 
     private Yoyo yoyo;
     private DistanceJoint2D distanceJoint;
-    private Rigidbody2D rigidBody;
+    private Rigidbody2D rb;
 
-    public float attachImpulseForce = 5f;
-    public float detachImpulseMultiplier = 0.5f;
-    public float swingSpeedBoost = 1.2f;
-    public float maxSwingSpeed = 20f;
-    public float ropeLength = 3f;
-
-    void Awake()
-    {
-        
-        rigidBody = GetComponent<Rigidbody2D>();
-    }
+    void Awake() => rb = GetComponent<Rigidbody2D>();
 
     void Update()
     {
-      
-
-        // Lanzar yoyo
-        if (distanceJoint == null && yoyo == null && Input.GetKeyDown(swingKey) && nearbyPoints.Count > 0)
-        {
+        if (!IsSwinging && !IsLaunching && Input.GetKeyDown(swingKey) && nearbyPoints.Count > 0)
             Launch(nearbyPoints[currentIndex]);
-        }
 
-        // Soltar yoyo
-        if (distanceJoint != null && Input.GetKeyDown(detachKey))
-        {
+        if (IsSwinging && (Input.GetKeyDown(detachKey) || Input.GetKeyDown(KeyCode.W)))
             Detach();
-        }
-
-
     }
+
     void FixedUpdate()
     {
-        if (distanceJoint != null)
-        {
-            Vector2 velocity = rigidBody.linearVelocity;
-
-            float speed = velocity.magnitude;
-
-            if (speed < maxSwingSpeed)
-            {
-                Vector2 direction = velocity.normalized;
-
-               
-                rigidBody.AddForce(direction * 2f, ForceMode2D.Force);
-            }
-        }
+        if (IsSwinging && rb.linearVelocity.magnitude < 15f)
+            rb.AddForce(rb.linearVelocity.normalized * 1.5f, ForceMode2D.Force);
     }
 
-    // Lanzar hacia un punto
     void Launch(SwingPoint target)
     {
-        Vector2 direction = (target.transform.position - transform.position).normalized;
-        Vector2 spawnPosition = (Vector2)transform.position + direction * 0.4f;
+        IsLaunching = true;
+        Vector2 dir = ((Vector2)target.transform.position - (Vector2)transform.position).normalized;
+        Vector2 spawnPos = (Vector2)transform.position + dir * 0.4f;
 
-        GameObject newYoyoObject = Instantiate(yoyoPrefab, spawnPosition, Quaternion.identity);
-
-        yoyo = newYoyoObject.GetComponent<Yoyo>();
-
-        yoyo.LaunchToAnchor(target.transform.position, transform, OnYoyoReachedTarget(target));
+        // Pool en vez de Instantiate
+        GameObject go = YoyoPool.Instance.Get(spawnPos);
+        yoyo = go.GetComponent<Yoyo>();
+        yoyo.LaunchToAnchor(target.transform.position, transform, () => Attach(target));
     }
 
-   
-    System.Action OnYoyoReachedTarget(SwingPoint target)
-    {
-        return delegate
-        {
-            Attach(target);
-        };
-    }
-
-    // Crear la cuerda 
     void Attach(SwingPoint target)
     {
-        distanceJoint = gameObject.AddComponent<DistanceJoint2D>();
+        IsLaunching = false;
 
+        distanceJoint = gameObject.AddComponent<DistanceJoint2D>();
         distanceJoint.autoConfigureConnectedAnchor = false;
         distanceJoint.connectedAnchor = target.transform.position;
         distanceJoint.autoConfigureDistance = false;
-
-
-        float distance = Vector2.Distance(transform.position, target.transform.position);
-        distanceJoint.distance = Mathf.Min(distance, ropeLength);
-
+        distanceJoint.distance = Mathf.Min(
+            Vector2.Distance(transform.position, target.transform.position), ropeLength);
         distanceJoint.maxDistanceOnly = true;
         distanceJoint.enableCollision = true;
-
-        Vector2 direction = (target.transform.position - transform.position).normalized;
-        rigidBody.AddForce(direction * attachImpulseForce, ForceMode2D.Impulse);
     }
 
-    // Soltar
     void Detach()
     {
-        
-        Vector2 currentVelocity = rigidBody.linearVelocity;
-
+        Vector2 vel = rb.linearVelocity;
         Destroy(distanceJoint);
         distanceJoint = null;
+        rb.linearVelocity = vel * detachBoost;
 
-        if (yoyo != null)
-        {
-            yoyo.ReturnToOwner();
-        }
-
-       
-        rigidBody.AddForce(currentVelocity *detachImpulseMultiplier, ForceMode2D.Impulse);
-
+        if (yoyo != null) yoyo.ReturnToOwner();
         RefreshHighlights();
     }
 
-   
-    public void RegisterPoint(SwingPoint swingPoint)
+    public void RegisterPoint(SwingPoint sp)
     {
-        if (nearbyPoints.Contains(swingPoint))
-        {
-            return;
-        }
-
-        nearbyPoints.Add(swingPoint);
-
-       
+        if (nearbyPoints.Contains(sp)) return;
+        nearbyPoints.Add(sp);
         currentIndex = nearbyPoints.Count - 1;
-
         RefreshHighlights();
     }
 
-    // Quitar punto cercano
-    public void UnregisterPoint(SwingPoint swingPoint)
+    public void UnregisterPoint(SwingPoint sp)
     {
-        nearbyPoints.Remove(swingPoint);
-
-        if (currentIndex >= nearbyPoints.Count)
-        {
-            currentIndex = nearbyPoints.Count - 1;
-        }
-
-        if (currentIndex < 0)
-        {
-            currentIndex = 0;
-        }
-
-        swingPoint.SetHighlight(false);
-
+        nearbyPoints.Remove(sp);
+        currentIndex = Mathf.Clamp(currentIndex, 0, Mathf.Max(0, nearbyPoints.Count - 1));
+        sp.SetHighlight(false);
         RefreshHighlights();
     }
 
-    // Actualizar qué punto está seleccionado
     void RefreshHighlights()
     {
         for (int i = 0; i < nearbyPoints.Count; i++)
-        {
-            if (i == currentIndex)
-            {
-                nearbyPoints[i].SetHighlight(true);
-            }
-            else
-            {
-                nearbyPoints[i].SetHighlight(false);
-            }
-        }
+            nearbyPoints[i].SetHighlight(i == currentIndex);
     }
 }

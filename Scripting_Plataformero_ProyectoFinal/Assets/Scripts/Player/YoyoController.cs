@@ -1,58 +1,46 @@
 using UnityEngine;
 
-
 public class YoyoController : MonoBehaviour
 {
-    public GameObject yoyoPrefab;
-
-    
-    public Vector2 spawnOffset = new Vector2(0.5f, 0f);
-
-    
     public KeyCode attackKey = KeyCode.Mouse0;
 
-    
     private Yoyo activeYoyo;
-    private SpriteRenderer spriteRenderer; 
+    private SwingController swingController;
 
     void Awake()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        swingController = GetComponent<SwingController>();
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(attackKey))
-        {
-            TryLaunchYoyo();
-        }
-           
+        if (swingController != null && (swingController.IsSwinging || swingController.IsLaunching)) return;
+        if (Input.GetKeyDown(attackKey)) TryLaunch();
     }
 
-    void TryLaunchYoyo()
+    void TryLaunch()
     {
-        // Un solo yoyo activo a la vez
-        if (activeYoyo != null && activeYoyo.isActive)
-            return;
+        if (activeYoyo != null && activeYoyo.isActive) return;
 
-       
-        float facingDir = GetFacingDirection();
-        Vector2 direction = new Vector2(facingDir, 0f);
+        Vector2 aimDir = GetAimDirection();
+        Vector2 spawnPos = (Vector2)transform.position + aimDir * 0.4f;
 
-        
-        Vector2 spawnPos = (Vector2)transform.position + new Vector2(spawnOffset.x * facingDir, spawnOffset.y);
-
-        GameObject go = Instantiate(yoyoPrefab, spawnPos, Quaternion.identity);
+        // Pool en vez de Instantiate
+        GameObject go = YoyoPool.Instance.Get(spawnPos);
         activeYoyo = go.GetComponent<Yoyo>();
-        activeYoyo.Launch(direction, transform); 
+        activeYoyo.Launch(aimDir, transform);
+
+        if (aimDir.x != 0)
+            transform.localScale = new Vector3(aimDir.x < 0 ? -1f : 1f, 1f, 1f);
     }
 
-    float GetFacingDirection()
+    Vector2 GetAimDirection()
     {
-        
-        if (transform.localScale.x < 0f) return -1f;
-        return 1f;
-
-       
+        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mouseWorld.z = 0f;
+        Vector2 dir = (mouseWorld - transform.position).normalized;
+        if (dir.magnitude < 0.01f)
+            dir = transform.localScale.x >= 0 ? Vector2.right : Vector2.left;
+        return dir;
     }
 }

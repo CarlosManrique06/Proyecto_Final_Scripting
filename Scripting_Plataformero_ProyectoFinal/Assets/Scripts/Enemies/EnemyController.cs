@@ -5,17 +5,11 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
-   
-
-   
-    
  
     public float EnemyHitStrengthX;
     public float EnemyHitStrengthY;
     public float EnemyHitTime;
     public float enemyDamage;
-
-    
 
    
     private void OnCollisionEnter2D(Collision2D collision)
