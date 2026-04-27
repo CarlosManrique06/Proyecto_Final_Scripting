@@ -34,7 +34,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private Animator playerAnimator;
 
-    
+    public bool controlsInverted = false;
+    public float invertTimer = 0f;
+
+
     private float movement;
     private bool isJumping;
     private float jumpClock;
@@ -54,6 +57,12 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (invertTimer > 0)
+        {
+            invertTimer -= Time.deltaTime;
+            if (invertTimer <= 0) controlsInverted = false;
+        }
+
         UpdateState();
         HandleByState();
     }
@@ -125,6 +134,7 @@ public class PlayerController : MonoBehaviour
     void HandleMovement()
     {
         movement = Input.GetAxisRaw("Horizontal");
+        if (controlsInverted) movement = -movement;
         rb.linearVelocity = new Vector2(movement * speed, rb.linearVelocity.y);
 
         if (movement < 0) transform.localScale = new Vector3(-1, 1, 1);

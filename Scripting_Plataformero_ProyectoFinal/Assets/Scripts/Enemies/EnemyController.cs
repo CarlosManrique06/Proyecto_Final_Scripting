@@ -25,6 +25,8 @@ public class EnemyController : MonoBehaviour
                 player.hitForceX = EnemyHitStrengthX;
                 player.hitForceY = EnemyHitStrengthY;
 
+                player.controlsInverted = true;
+                player.invertTimer = 3f; 
 
                 if (collision.transform.position.x <= transform.position.x)
                 {

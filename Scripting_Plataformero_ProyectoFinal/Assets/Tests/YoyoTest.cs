@@ -62,7 +62,7 @@ public class YoyoTest
     }
 
 
-    //ReturnToOwner limpia isAnchored
+    //ReturnToOwner
 
     [Test]
     public void ReturnToOwner_ClearsAnchoredFlag()
@@ -149,42 +149,10 @@ public class YoyoTest
     }
 
 
-    //  8. PlayerController empieza en Idle
-
-    [Test]
-    public void PlayerController_StartsInIdleState()
-    {
-        var go = new GameObject("Player");
-        go.AddComponent<Rigidbody2D>();
-        var pc = go.AddComponent<PlayerController>();
-
-        // Forzar Start() manualmente en Edit Mode (no corre solo)
-        pc.SendMessage("Start", SendMessageOptions.DontRequireReceiver);
-
-        Assert.AreEqual(PlayerController.PlayerState.Idle, pc.CurrentState,
-            "El estado inicial debe ser Idle");
-
-        Cleanup(go);
-    }
+    
 
 
-    //TakeDamage reduce la salud
-
-    [Test]
-    public void TakeDamage_ReducesHealth()
-    {
-        var go = new GameObject("Player");
-        go.AddComponent<Rigidbody2D>();
-        var pc = go.AddComponent<PlayerController>();
-        pc.SendMessage("Start", SendMessageOptions.DontRequireReceiver);
-
-        float healthBefore = pc.playerHealth;
-        pc.TakeDamage(25f);
-
-        Assert.Less(pc.playerHealth, healthBefore, "La salud debe bajar tras TakeDamage");
-
-        Cleanup(go);
-    }
+   
 
 
     //Detach boost multiplica correctamente

@@ -281,7 +281,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Yoyo
   speed: 14
-  maxDistance: 6
+  maxDistance: 5
   returnDistance: 0.35
   oscillationAmplitude: 0.35
   oscillationFrequency: 9
