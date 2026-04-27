@@ -135,6 +135,7 @@ public class PlayerController : MonoBehaviour
     {
         movement = Input.GetAxisRaw("Horizontal");
         if (controlsInverted) movement = -movement;
+
         rb.linearVelocity = new Vector2(movement * speed, rb.linearVelocity.y);
 
         if (movement < 0) transform.localScale = new Vector3(-1, 1, 1);
