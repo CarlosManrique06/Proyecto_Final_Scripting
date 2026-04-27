@@ -92,7 +92,7 @@ public class Yoyo : MonoBehaviour
 
             transform.Translate((direction * speed + perp * osc) * Time.deltaTime, Space.World);
 
-            float projected = Vector2.Dot((Vector2)transform.position - startPosition, direction);
+            float projected = Vector2.Dot((Vector2)transform.position - (Vector2)owner.position, direction);
             if (projected >= maxDistance) currentState = State.Returning;
         }
         else if (currentState == State.Returning)
