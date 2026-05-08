@@ -7,9 +7,6 @@ public class Yoyo : MonoBehaviour
     public float maxDistance = 5f;
     public float returnDistance = 0.35f;
 
-    public float oscillationAmplitude = 0.35f;
-    public float oscillationFrequency = 9f;
-
     public int damage = 1;
     public string enemyTag = "enemy";
 
@@ -25,7 +22,6 @@ public class Yoyo : MonoBehaviour
     private Vector2 direction;
     private Vector2 startPosition;
     private Vector2 anchorPosition;
-    private float oscillationTime;
     private Action onAnchorReached;
 
     void Awake()
@@ -41,18 +37,16 @@ public class Yoyo : MonoBehaviour
         DrawString();
     }
 
-    
-
     public void Launch(Vector2 dir, Transform player)
     {
         direction = dir.normalized;
         owner = player;
         startPosition = transform.position;
-        oscillationTime = 0f;
         currentState = State.Going;
         isActive = true;
     }
 
+    // Mantener compatibilidad con SwingController
     public void LaunchToAnchor(Vector2 target, Transform player, Action callback)
     {
         anchorPosition = target;
@@ -69,31 +63,26 @@ public class Yoyo : MonoBehaviour
         currentState = State.Returning;
     }
 
-    //Llamado por YoyoPool al sacar del pool 
+    // Mantener compatibilidad con YoyoPool
     public void ResetState()
     {
         isActive = false;
         isAnchored = false;
         owner = null;
         onAnchorReached = null;
-        oscillationTime = 0f;
         if (lineRenderer != null) lineRenderer.positionCount = 0;
     }
-
 
     void Move()
     {
         if (currentState == State.Going)
         {
-            oscillationTime += Time.deltaTime;
-            Vector2 perp = Vector2.Perpendicular(direction);
-            float osc = Mathf.Cos(oscillationTime * oscillationFrequency)
-                        * oscillationAmplitude * oscillationFrequency;
+            // avanza recto hasta la distancia máxima
+            transform.Translate(direction * speed * Time.deltaTime, Space.World);
 
-            transform.Translate((direction * speed + perp * osc) * Time.deltaTime, Space.World);
-
-            float projected = Vector2.Dot((Vector2)transform.position - (Vector2)owner.position, direction);
-            if (projected >= maxDistance) currentState = State.Returning;
+            float distanceTravelled = Vector2.Distance(transform.position, startPosition);
+            if (distanceTravelled >= maxDistance)
+                currentState = State.Returning;
         }
         else if (currentState == State.Returning)
         {
@@ -145,7 +134,7 @@ public class Yoyo : MonoBehaviour
         isAnchored = false;
         if (lineRenderer != null) lineRenderer.positionCount = 0;
 
-        // Devolver al pool en vez de Destroy
+        // Mantener compatibilidad con el pool
         if (YoyoPool.Instance != null)
             YoyoPool.Instance.Return(gameObject);
         else
