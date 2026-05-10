@@ -10,7 +10,7 @@ public class TakeDamageManager : MonoBehaviour
     private Animator playerAnimator;
     private float invincibilityClock;
     public  float  time;
-
+    public GameObject gameoverMenu;
    
     [SerializeField] public ParticleSystem ParticlesCaller;
     void Start()
@@ -40,10 +40,12 @@ public class TakeDamageManager : MonoBehaviour
         ParticlesCaller  = GetComponentInChildren<ParticleSystem>();
         var main = ParticlesCaller.main;
        
+        gameoverMenu.SetActive(true);
+
         main.startColor = Color.white;
         ParticlesCaller.Play();
         
-            healthManager.playerHealth -= damage;
+            healthManager.playerHealth -= 110;
             playerAnimator.SetTrigger("Hit");
             invincibilityClock = time;
         

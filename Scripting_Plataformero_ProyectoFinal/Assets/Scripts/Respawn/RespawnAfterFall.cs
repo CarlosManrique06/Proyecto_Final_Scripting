@@ -7,17 +7,6 @@ public class RespawnAfterFall : MonoBehaviour
    
     public float fallDamage;
     
-    // Start is called before the first frame update
-    void Start()
-    {
-       
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -25,10 +14,11 @@ public class RespawnAfterFall : MonoBehaviour
         if (collision.gameObject.CompareTag("Player"))
         {
             TakeDamageManager fall = collision.gameObject.GetComponent<TakeDamageManager>();
-        
+           
+
 
             collision.gameObject.transform.position = RespawnPoint.fallSpawn;
-            fall.TakeDamage(fallDamage);
+            fall.TakeDamage(100);
         }
 
     }

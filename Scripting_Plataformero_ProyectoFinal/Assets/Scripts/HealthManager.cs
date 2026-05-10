@@ -47,7 +47,7 @@ public class HealthManager : MonoBehaviour
         else if (playerHealth <= 0)
         {
 
-            SceneManager.LoadScene(0);
+           // SceneManager.LoadScene(0);
         }
 
        
