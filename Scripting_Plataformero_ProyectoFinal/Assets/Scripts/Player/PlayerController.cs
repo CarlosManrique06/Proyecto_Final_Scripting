@@ -178,20 +178,7 @@ public class PlayerController : MonoBehaviour
 
    
 
-    public void TakeDamage(float damage)
-    {
-        Health -= damage;
-        hitTimer = hitDuration;
-        hitFromRight = true;
-
-        if (playerAnimator != null) playerAnimator.SetTrigger("Hit");
-
-        if (Health <= 0)
-        {
-            Health = MaxHealth;
-            if (startPosition != null) transform.position = startPosition.position;
-        }
-    }
+   
 
     
     // Llamado por EnemyController para aplicar knockback con parámetros propios del enemigo.

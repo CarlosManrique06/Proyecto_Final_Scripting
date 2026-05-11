@@ -1,58 +1,68 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class TakeDamageManager : MonoBehaviour
+public class TakeDamageManager : MonoBehaviour, IDamage // Firmamos el contrato aquí
 {
-    // Start is called before the first frame update
     private HealthManager healthManager;
-
     private Animator playerAnimator;
-    private float invincibilityClock;
-    [SerializeField] public  float  time;
-   
     private SpriteRenderer spriteRenderer;
-    [SerializeField] public ParticleSystem ParticlesCaller;
+    private float invincibilityClock;
+
+    [Header("Settings")]
+    [SerializeField] private float invincibilityTime = 1.0f;
+    [SerializeField] private ParticleSystem particlesCaller;
+
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        healthManager = FindAnyObjectByType<HealthManager>();
         playerAnimator = GetComponent<Animator>();
-        TakeDamageManager invincibility = GetComponent<TakeDamageManager>();
+        healthManager = FindAnyObjectByType<HealthManager>();
 
+        // Si no asignaste las partículas en el inspector, las buscamos
+        if (particlesCaller == null)
+            particlesCaller = GetComponentInChildren<ParticleSystem>();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if(invincibilityClock > 0)
+        if (invincibilityClock > 0)
         {
             invincibilityClock -= Time.deltaTime;
-                spriteRenderer.color = Color.red;
+            spriteRenderer.color = Color.red; // Feedback visual de daño
         }
-        else if(invincibilityClock <= 0)
+        else
         {
             spriteRenderer.color = Color.white;
         }
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(int damage)
     {
-        ParticlesCaller  = GetComponentInChildren<ParticleSystem>();
-        var main = ParticlesCaller.main;
-       
-        
+        // Si estamos en tiempo de invencibilidad, ignoramos el daño
+        if (invincibilityClock > 0) return;
 
-        main.startColor = Color.red;
-        ParticlesCaller.Play();
-        
+        // 1. Aplicar daño al HealthManager
+        if (healthManager != null)
+        {
             healthManager.playerHealth -= damage;
-            playerAnimator.SetTrigger("Hit");
-            invincibilityClock = time;
-        
-        
+        }
 
+        // 2. Feedback Visual
+        if (playerAnimator != null) playerAnimator.SetTrigger("Hit");
+
+        if (particlesCaller != null)
+        {
+            var main = particlesCaller.main;
+            main.startColor = Color.red;
+            particlesCaller.Play();
+        }
+
+        // 3. Iniciar invencibilidad
+        invincibilityClock = invincibilityTime;
+        PlayerController player = GetComponent<PlayerController>();
+        if (player != null)
+        {
+            // Llamas solo a la parte física del golpe
+            player.ApplyHit(5f, 2f, 0.3f, true);
+        }
     }
-
-
 }

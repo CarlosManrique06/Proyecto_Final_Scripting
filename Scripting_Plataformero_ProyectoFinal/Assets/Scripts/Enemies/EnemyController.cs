@@ -10,16 +10,25 @@ public class EnemyController : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (!collision.gameObject.CompareTag("Player")) return;
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            // 2. Intentamos obtener la interfaz IDamage del objeto con el que chocamos
+            IDamage damageable = collision.gameObject.GetComponent<IDamage>();
 
-        PlayerController player = collision.gameObject.GetComponent<PlayerController>();
-        if (player == null) return;
+            if (damageable != null)
+            {
+                // 3. Aplicamos el daño a través de la interfaz
+                damageable.TakeDamage((int)enemyDamage);
 
-        bool fromRight = collision.transform.position.x <= transform.position.x;
-
-        // En vez de modificar los campos directamente, usamos los métodos públicos
-        player.TakeDamage(enemyDamage);
-        player.ApplyHit(hitForceX, hitForceY, hitDuration, fromRight);
-        player.ApplyControlsInverted(invertDuration);
+                // 4. OPCIONAL: Aplicar el empuje físico si el objeto tiene PlayerController
+                PlayerController player = collision.gameObject.GetComponent<PlayerController>();
+                if (player != null)
+                {
+                    // Calculamos si el enemigo está a la derecha o izquierda para el empuje
+                    bool hitFromRight = transform.position.x > collision.transform.position.x;
+                    player.ApplyHit(hitForceX, hitForceY, hitDuration, hitFromRight);
+                }
+            }
+        }
     }
 }

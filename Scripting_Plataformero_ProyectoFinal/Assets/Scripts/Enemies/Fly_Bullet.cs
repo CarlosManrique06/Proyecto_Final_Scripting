@@ -6,7 +6,7 @@ public class Fly_Bullet : MonoBehaviour
 {
     GameObject target;
     public float speed;
-    public float bulletDamage;
+    public int bulletDamage;
     Rigidbody2D bulletRB;
     
     
