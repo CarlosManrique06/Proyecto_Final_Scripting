@@ -9,13 +9,13 @@ public class TakeDamageManager : MonoBehaviour
 
     private Animator playerAnimator;
     private float invincibilityClock;
-    public  float  time;
-    public GameObject gameoverMenu;
+    [SerializeField] public  float  time;
    
+    private SpriteRenderer spriteRenderer;
     [SerializeField] public ParticleSystem ParticlesCaller;
     void Start()
     {
-      
+        spriteRenderer = GetComponent<SpriteRenderer>();
         healthManager = FindAnyObjectByType<HealthManager>();
         playerAnimator = GetComponent<Animator>();
         TakeDamageManager invincibility = GetComponent<TakeDamageManager>();
@@ -28,10 +28,11 @@ public class TakeDamageManager : MonoBehaviour
         if(invincibilityClock > 0)
         {
             invincibilityClock -= Time.deltaTime;
+                spriteRenderer.color = Color.red;
         }
         else if(invincibilityClock <= 0)
         {
-
+            spriteRenderer.color = Color.white;
         }
     }
 
@@ -40,12 +41,12 @@ public class TakeDamageManager : MonoBehaviour
         ParticlesCaller  = GetComponentInChildren<ParticleSystem>();
         var main = ParticlesCaller.main;
        
-        gameoverMenu.SetActive(true);
+        
 
-        main.startColor = Color.white;
+        main.startColor = Color.red;
         ParticlesCaller.Play();
         
-            healthManager.playerHealth -= 110;
+            healthManager.playerHealth -= damage;
             playerAnimator.SetTrigger("Hit");
             invincibilityClock = time;
         

@@ -3,11 +3,13 @@ using UnityEngine;
 public class GameOver : MonoBehaviour
 {
     // referencia al panel de Game Over
-    public GameObject gameOverPanel;
+    [SerializeField] public GameObject gameOverPanel;
 
     void Start()
     {
         // aseguramos que el panel esté oculto al inicio
+        Time.timeScale = 1f;
+
         if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
     }
@@ -16,6 +18,14 @@ public class GameOver : MonoBehaviour
     public void ShowGameOver()
     {
         if (gameOverPanel != null)
+        {
             gameOverPanel.SetActive(true);
+            Time.timeScale = 0f; 
+         }
+
     }
+
+ 
+
+
 }

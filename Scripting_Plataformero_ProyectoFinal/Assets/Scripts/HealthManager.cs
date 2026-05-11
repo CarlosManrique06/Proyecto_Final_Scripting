@@ -14,6 +14,8 @@ public class HealthManager : MonoBehaviour
     public TextMeshProUGUI coinsText;
     public float coinsNumber;
 
+    [SerializeField] public GameObject gameoverMenu;
+
 
     // Start is called before the first frame update
     void Start()
@@ -37,7 +39,7 @@ public class HealthManager : MonoBehaviour
             playerHealth = maxHealth;
         }
 
-        
+
         else if (playerHealth > 0)
         {
 
@@ -47,7 +49,8 @@ public class HealthManager : MonoBehaviour
         else if (playerHealth <= 0)
         {
 
-           // SceneManager.LoadScene(0);
+            gameoverMenu.SetActive(true);
+            Time.timeScale = 0f;
         }
 
        

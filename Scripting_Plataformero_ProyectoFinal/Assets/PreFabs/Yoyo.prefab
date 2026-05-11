@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 714315127792272719}
   - component: {fileID: 6555835637974922480}
   - component: {fileID: 69747077749613237}
-  - component: {fileID: 222064409929382401}
+  - component: {fileID: 7235938529069710558}
   m_Layer: 7
   m_Name: Yoyo
   m_TagString: Untagged
@@ -30,7 +30,7 @@ Transform:
   m_GameObject: {fileID: 8563941537427567937}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.528, y: -0.038, z: 0}
+  m_LocalPosition: {x: 0.28, y: -0.038, z: 0}
   m_LocalScale: {x: 0.3636, y: 0.3636, z: 0.3636}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -83,7 +83,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_MaskInteraction: 0
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 1, g: 0.8693517, b: 0.6273585, a: 1}
@@ -184,7 +184,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 63d75e543621376478939b691966cb86, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -268,7 +268,7 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
---- !u!114 &222064409929382401
+--- !u!114 &7235938529069710558
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -279,14 +279,13 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6b28a74e0867bd34090d0073493a0ddf, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Yoyo
+  m_EditorClassIdentifier: NewAssembly::Yoyo
   speed: 14
   maxDistance: 5
   returnDistance: 0.35
-  oscillationAmplitude: 0.35
-  oscillationFrequency: 9
-  damage: 2
+  damage: 1
   enemyTag: enemy
   lineRenderer: {fileID: 69747077749613237}
   isActive: 0
   isAnchored: 0
+  yoyoVisual: {fileID: 0}

@@ -23,6 +23,7 @@ public class Yoyo : MonoBehaviour
     private Vector2 startPosition;
     private Vector2 anchorPosition;
     private Action onAnchorReached;
+    
 
     void Awake()
     {
@@ -80,7 +81,7 @@ public class Yoyo : MonoBehaviour
             // avanza recto hasta la distancia máxima
             transform.Translate(direction * speed * Time.deltaTime, Space.World);
 
-            float distanceTravelled = Vector2.Distance(transform.position, startPosition);
+            float distanceTravelled = Vector2.Distance(transform.position, owner.position);
             if (distanceTravelled >= maxDistance)
                 currentState = State.Returning;
         }
@@ -130,6 +131,7 @@ public class Yoyo : MonoBehaviour
 
     void Deactivate()
     {
+        
         isActive = false;
         isAnchored = false;
         if (lineRenderer != null) lineRenderer.positionCount = 0;

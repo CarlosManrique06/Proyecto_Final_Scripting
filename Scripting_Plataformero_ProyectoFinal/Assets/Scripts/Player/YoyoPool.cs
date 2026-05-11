@@ -50,7 +50,7 @@ public class YoyoPool : MonoBehaviour
 
         // Resetear el componente Yoyo para que empiece limpio
         Yoyo yoyo = go.GetComponent<Yoyo>();
-        if (yoyo != null) yoyo.ResetState();
+       if (yoyo != null) yoyo.ResetState();
 
         return go;
     }

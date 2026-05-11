@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour
     }
 
    
+    
 
     public float speed = 8f;
     public float jumpForce = 12f;
@@ -48,6 +49,10 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+      
+        
+        
+        
         rb = GetComponent<Rigidbody2D>();
         swingController = GetComponent<SwingController>();
         playerHealth = maxHealth;
@@ -209,7 +214,9 @@ public class PlayerController : MonoBehaviour
         playerHealth -= damage;
         hitTime = hitDuration;
         hitFromRight = true;
+       
         if (playerAnimator != null) playerAnimator.SetTrigger("Hit");
+
 
         if (playerHealth <= 0)
         {

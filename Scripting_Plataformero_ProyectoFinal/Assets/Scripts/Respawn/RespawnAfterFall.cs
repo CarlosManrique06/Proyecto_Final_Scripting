@@ -18,7 +18,7 @@ public class RespawnAfterFall : MonoBehaviour
 
 
             collision.gameObject.transform.position = RespawnPoint.fallSpawn;
-            fall.TakeDamage(100);
+            fall.TakeDamage(10);
         }
 
     }

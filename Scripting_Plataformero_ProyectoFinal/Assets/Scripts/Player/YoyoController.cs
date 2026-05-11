@@ -4,7 +4,7 @@ public class YoyoController : MonoBehaviour
 {
     public KeyCode attackKey = KeyCode.Mouse0; // tecla para lanzar el yoyo
     public GameObject yoyoPrefab;              // prefab del yoyo (asignar en Inspector)
-
+    public GameObject yoyoVisual;
     private Yoyo activeYoyo;                   // referencia al yoyo activo
     private SwingController swingController;   // referencia al controlador de balanceo
 
@@ -19,12 +19,17 @@ public class YoyoController : MonoBehaviour
         if (swingController != null && (swingController.IsSwinging || swingController.IsLaunching)) return;
 
         // si se presiona la tecla de ataque, intenta lanzar el yoyo
-        if (Input.GetKeyDown(attackKey)) TryLaunch();
+        if (Input.GetKeyDown(attackKey)) { TryLaunch(); }
+
+        if(activeYoyo != null && activeYoyo.isActive == false && activeYoyo.isAnchored == false) yoyoVisual.SetActive(true);
+
+       
     }
 
     void TryLaunch()
     {
         // si ya hay un yoyo activo, no lanza otro
+        yoyoVisual.SetActive(false);
         if (activeYoyo != null && activeYoyo.isActive) return;
 
         // calcula la dirección hacia el mouse
@@ -32,10 +37,18 @@ public class YoyoController : MonoBehaviour
         // posición inicial del yoyo, un poco delante del jugador
         Vector2 spawnPos = (Vector2)transform.position + aimDir * 0.4f;
 
-        // instancia directa del prefab en vez de usar pool
-        GameObject go = Instantiate(yoyoPrefab, spawnPos, Quaternion.identity); // crea el yoyo en la escena
-        activeYoyo = go.GetComponent<Yoyo>(); // obtiene el script Yoyo del objeto instanciado
-        activeYoyo.Launch(aimDir, transform); // lanza el yoyo hacia la dirección calculada
+        if (YoyoPool.Instance != null)
+        {
+            GameObject go = YoyoPool.Instance.Get(spawnPos);
+            if (go != null)
+            {
+                activeYoyo = go.GetComponent<Yoyo>();
+                activeYoyo.Launch(aimDir, transform);
+
+                // Apagamos el visual de la mano inmediatamente al lanzar
+                if (yoyoVisual != null) yoyoVisual.SetActive(false);
+            }
+        }
 
         // ajusta la escala del jugador según la dirección (para voltear el sprite)
         if (aimDir.x != 0)
