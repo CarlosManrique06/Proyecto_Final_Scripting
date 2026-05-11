@@ -3,18 +3,19 @@ using UnityEngine;
 
 public class SwingController : MonoBehaviour
 {
-    public KeyCode swingKey = KeyCode.E;
-    public KeyCode detachKey = KeyCode.Space;
+    
+    [SerializeField] private KeyCode swingKey = KeyCode.E;
+    [SerializeField] private KeyCode detachKey = KeyCode.Space;
+    [SerializeField] private float ropeLength = 3f;
+    [SerializeField] private float detachBoost = 1.15f;
 
-    public float ropeLength = 3f;
-    public float detachBoost = 1.15f;
-
+    
     public bool IsSwinging => distanceJoint != null;
     public bool IsLaunching { get; private set; }
 
+    
     private List<SwingPoint> nearbyPoints = new List<SwingPoint>();
     private int currentIndex;
-
     private Yoyo yoyo;
     private DistanceJoint2D distanceJoint;
     private Rigidbody2D rb;
@@ -42,7 +43,6 @@ public class SwingController : MonoBehaviour
         Vector2 dir = ((Vector2)target.transform.position - (Vector2)transform.position).normalized;
         Vector2 spawnPos = (Vector2)transform.position + dir * 0.4f;
 
-        // Pool en vez de Instantiate
         GameObject go = YoyoPool.Instance.Get(spawnPos);
         yoyo = go.GetComponent<Yoyo>();
         yoyo.LaunchToAnchor(target.transform.position, transform, () => Attach(target));
@@ -73,6 +73,7 @@ public class SwingController : MonoBehaviour
         RefreshHighlights();
     }
 
+   
     public void RegisterPoint(SwingPoint sp)
     {
         if (nearbyPoints.Contains(sp)) return;
@@ -89,7 +90,7 @@ public class SwingController : MonoBehaviour
         RefreshHighlights();
     }
 
-    void RefreshHighlights()
+    private void RefreshHighlights()
     {
         for (int i = 0; i < nearbyPoints.Count; i++)
             nearbyPoints[i].SetHighlight(i == currentIndex);

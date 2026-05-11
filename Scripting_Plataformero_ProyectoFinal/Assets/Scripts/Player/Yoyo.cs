@@ -3,27 +3,29 @@ using UnityEngine;
 
 public class Yoyo : MonoBehaviour
 {
-    public float speed = 14f;
-    public float maxDistance = 5f;
-    public float returnDistance = 0.35f;
 
-    public int damage = 1;
-    public string enemyTag = "enemy";
+    [SerializeField] private float speed = 14f;
+    [SerializeField] private float maxDistance = 5f;
+    [SerializeField] private float returnDistance = 0.35f;
+    [SerializeField] private int damage = 1;
+    [SerializeField] private string enemyTag = "enemy";
+    [SerializeField] private LineRenderer lineRenderer;
 
-    public LineRenderer lineRenderer;
+    
 
-    public bool isActive;
-    public bool isAnchored;
+    public bool IsActive { get; private set; }
+    public bool IsAnchored { get; private set; }
+
+    
 
     private enum State { Going, Returning, GoingToAnchor, Anchored }
     private State currentState;
 
     private Transform owner;
     private Vector2 direction;
-    private Vector2 startPosition;
     private Vector2 anchorPosition;
     private Action onAnchorReached;
-    
+
 
     void Awake()
     {
@@ -33,21 +35,21 @@ public class Yoyo : MonoBehaviour
 
     void Update()
     {
-        if (!isActive) return;
+        if (!IsActive) return;
         Move();
         DrawString();
     }
+
+   
 
     public void Launch(Vector2 dir, Transform player)
     {
         direction = dir.normalized;
         owner = player;
-        startPosition = transform.position;
         currentState = State.Going;
-        isActive = true;
+        IsActive = true;
     }
 
-    // Mantener compatibilidad con SwingController
     public void LaunchToAnchor(Vector2 target, Transform player, Action callback)
     {
         anchorPosition = target;
@@ -55,34 +57,35 @@ public class Yoyo : MonoBehaviour
         direction = (target - (Vector2)transform.position).normalized;
         onAnchorReached = callback;
         currentState = State.GoingToAnchor;
-        isActive = true;
+        IsActive = true;
     }
 
     public void ReturnToOwner()
     {
-        isAnchored = false;
+        IsAnchored = false;
         currentState = State.Returning;
     }
 
-    // Mantener compatibilidad con YoyoPool
     public void ResetState()
     {
-        isActive = false;
-        isAnchored = false;
+        IsActive = false;
+        IsAnchored = false;
         owner = null;
         onAnchorReached = null;
         if (lineRenderer != null) lineRenderer.positionCount = 0;
     }
 
+  
+    //  Movimiento — private, nadie más lo llama
+    
+
     void Move()
     {
         if (currentState == State.Going)
         {
-            // avanza recto hasta la distancia máxima
             transform.Translate(direction * speed * Time.deltaTime, Space.World);
 
-            float distanceTravelled = Vector2.Distance(transform.position, owner.position);
-            if (distanceTravelled >= maxDistance)
+            if (Vector2.Distance(transform.position, owner.position) >= maxDistance)
                 currentState = State.Returning;
         }
         else if (currentState == State.Returning)
@@ -101,7 +104,7 @@ public class Yoyo : MonoBehaviour
             {
                 transform.position = anchorPosition;
                 currentState = State.Anchored;
-                isAnchored = true;
+                IsAnchored = true;
                 onAnchorReached?.Invoke();
             }
         }
@@ -121,7 +124,7 @@ public class Yoyo : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (!isActive || isAnchored) return;
+        if (!IsActive || IsAnchored) return;
         if (other.CompareTag(enemyTag))
         {
             other.GetComponent<IDamage>()?.TakeDamage(damage);
@@ -131,15 +134,9 @@ public class Yoyo : MonoBehaviour
 
     void Deactivate()
     {
-        
-        isActive = false;
-        isAnchored = false;
+        IsActive = false;
+        IsAnchored = false;
         if (lineRenderer != null) lineRenderer.positionCount = 0;
-
-        // Mantener compatibilidad con el pool
-        if (YoyoPool.Instance != null)
-            YoyoPool.Instance.Return(gameObject);
-        else
-            Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 }

@@ -2,9 +2,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    //Estados
+   
     public enum PlayerState { Idle, Running, Jumping, Swinging, Hit }
-
     public PlayerState CurrentState { get; private set; } = PlayerState.Idle;
 
     void SetState(PlayerState next)
@@ -13,21 +12,16 @@ public class PlayerController : MonoBehaviour
         CurrentState = next;
     }
 
-   
-    
 
-    public float speed = 8f;
-    public float jumpForce = 12f;
-    public float jumpTime = 0.2f;
-    public float gravityScale = 3f;
-    public Transform startPosition;
+    [SerializeField] private float speed = 8f;
+    [SerializeField] private float jumpForce = 12f;
+    [SerializeField] private float jumpTime = 0.2f;
+    [SerializeField] private float gravityScale = 3f;
+    [SerializeField] private Transform startPosition;
 
-    public float hitForceX = 5f;
-    public float hitForceY = 2f;
-    public float hitDuration = 0.3f;
-
-    public float playerHealth = 100f;
-    private float maxHealth = 100f;
+    [SerializeField] private float hitForceX = 5f;
+    [SerializeField] private float hitForceY = 2f;
+    [SerializeField] private float hitDuration = 0.3f;
 
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform groundCheck;
@@ -35,28 +29,32 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private Animator playerAnimator;
 
-    public bool controlsInverted = false;
-    public float invertTimer = 0f;
+  
 
+    public float Health { get; private set; }
+    private const float MaxHealth = 100f;
+
+  
 
     private float movement;
     private bool isJumping;
     private float jumpClock;
-    public float hitTime;
-    public bool hitFromRight;
+    private float hitTimer;
+    private bool hitFromRight;
+    private bool controlsInverted;
+    private float invertTimer;
+
     private SwingController swingController;
 
+    
 
     void Start()
     {
-      
-        
-        
-        
         rb = GetComponent<Rigidbody2D>();
         swingController = GetComponent<SwingController>();
-        playerHealth = maxHealth;
+        Health = MaxHealth;
         jumpClock = jumpTime;
+
         if (startPosition != null) transform.position = startPosition.position;
     }
 
@@ -72,39 +70,23 @@ public class PlayerController : MonoBehaviour
         HandleByState();
     }
 
-   
-    //  Determinar estado
+  
+    //  Estado
+  
 
     void UpdateState()
     {
-       
-        if (hitTime > 0)
-        {
-            SetState(PlayerState.Hit);
-            return;
-        }
+        if (hitTimer > 0) { SetState(PlayerState.Hit); return; }
+        if (swingController != null &&
+            (swingController.IsSwinging ||
+             swingController.IsLaunching)) { SetState(PlayerState.Swinging); return; }
 
-        // Columpio
-        if (swingController != null && (swingController.IsSwinging || swingController.IsLaunching))
-        {
-            SetState(PlayerState.Swinging);
-            return;
-        }
-
-        // Salto / caída
         bool grounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, groundLayer);
-        if (!grounded)
-        {
-            SetState(PlayerState.Jumping);
-            return;
-        }
+        if (!grounded) { SetState(PlayerState.Jumping); return; }
 
-        // En el suelo
         movement = Input.GetAxisRaw("Horizontal");
         SetState(movement != 0 ? PlayerState.Running : PlayerState.Idle);
     }
-
-   
 
     void HandleByState()
     {
@@ -112,17 +94,12 @@ public class PlayerController : MonoBehaviour
         {
             case PlayerState.Idle:
             case PlayerState.Running:
+            case PlayerState.Jumping:
                 HandleMovement();
                 HandleJumpInput();
                 break;
 
-            case PlayerState.Jumping:
-                HandleMovement();   // control aéreo normal
-                HandleJumpInput();
-                break;
-
             case PlayerState.Swinging:
-                // NO sobreescribir velocidad — la física del péndulo manda
                 HandleSwingAirControl();
                 break;
 
@@ -134,7 +111,7 @@ public class PlayerController : MonoBehaviour
         UpdateAnimator();
     }
 
-   
+  
 
     void HandleMovement()
     {
@@ -172,15 +149,9 @@ public class PlayerController : MonoBehaviour
             rb.gravityScale = gravityScale;
         }
 
-        if (jumpReleased)
-        {
-            rb.gravityScale = gravityScale;
-            jumpClock = 0;
-            isJumping = false;
-        }
+        if (jumpReleased) { rb.gravityScale = gravityScale; jumpClock = 0; isJumping = false; }
     }
 
-    // Permite girar el sprite en el aire durante el columpio, sin tocar velocity
     void HandleSwingAirControl()
     {
         movement = Input.GetAxisRaw("Horizontal");
@@ -194,7 +165,7 @@ public class PlayerController : MonoBehaviour
             ? new Vector2(-hitForceX, hitForceY)
             : new Vector2(hitForceX, hitForceY);
 
-        hitTime -= Time.deltaTime;
+        hitTimer -= Time.deltaTime;
     }
 
     void UpdateAnimator()
@@ -206,27 +177,45 @@ public class PlayerController : MonoBehaviour
     }
 
    
-    //  Salud y daño
-   
 
     public void TakeDamage(float damage)
     {
-        playerHealth -= damage;
-        hitTime = hitDuration;
+        Health -= damage;
+        hitTimer = hitDuration;
         hitFromRight = true;
-       
+
         if (playerAnimator != null) playerAnimator.SetTrigger("Hit");
 
-
-        if (playerHealth <= 0)
+        if (Health <= 0)
         {
-            playerHealth = maxHealth;
+            Health = MaxHealth;
             if (startPosition != null) transform.position = startPosition.position;
         }
     }
 
+    
+    // Llamado por EnemyController para aplicar knockback con parámetros propios del enemigo.
+   
+    
+    public void ApplyHit(float forceX, float forceY, float duration, bool fromRight)
+    {
+        hitForceX = forceX;
+        hitForceY = forceY;
+        hitTimer = duration;
+        hitFromRight = fromRight;
+    }
+
+   
+    // Invierte los controles por un tiempo determinado.
+   
+    public void ApplyControlsInverted(float duration)
+    {
+        controlsInverted = true;
+        invertTimer = duration;
+    }
+
     public void AddHealth(float amount)
     {
-        playerHealth = Mathf.Min(playerHealth + amount, maxHealth);
+        Health = Mathf.Min(Health + amount, MaxHealth);
     }
 }

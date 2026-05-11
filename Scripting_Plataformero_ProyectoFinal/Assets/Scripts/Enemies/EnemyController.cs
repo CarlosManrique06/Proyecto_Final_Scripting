@@ -1,49 +1,25 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
- 
-    public float EnemyHitStrengthX;
-    public float EnemyHitStrengthY;
-    public float EnemyHitTime;
-    public float enemyDamage;
+    [SerializeField] private float hitForceX = 5f;
+    [SerializeField] private float hitForceY = 2f;
+    [SerializeField] private float hitDuration = 0.3f;
+    [SerializeField] private float enemyDamage = 10f;
+    [SerializeField] private float invertDuration = 3f;
 
-   
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-           
-            TakeDamageManager damage = collision.gameObject.GetComponent<TakeDamageManager>();
-           
-            {
-                PlayerController player = collision.gameObject.GetComponent<PlayerController>();
-                player.hitTime = EnemyHitTime;
-                player.hitForceX = EnemyHitStrengthX;
-                player.hitForceY = EnemyHitStrengthY;
+        if (!collision.gameObject.CompareTag("Player")) return;
 
-                player.controlsInverted = true;
-                player.invertTimer = 3f; 
+        PlayerController player = collision.gameObject.GetComponent<PlayerController>();
+        if (player == null) return;
 
-                if (collision.transform.position.x <= transform.position.x)
-                {
-                    player.hitFromRight = true;
-                }
-                else if (collision.transform.position.x > transform.position.x)
-                {
-                    player.hitFromRight = false;
-                }
-            }
-            damage.TakeDamage(enemyDamage);
-      
+        bool fromRight = collision.transform.position.x <= transform.position.x;
 
-            
-        }
-         
-        
-
+        // En vez de modificar los campos directamente, usamos los métodos públicos
+        player.TakeDamage(enemyDamage);
+        player.ApplyHit(hitForceX, hitForceY, hitDuration, fromRight);
+        player.ApplyControlsInverted(invertDuration);
     }
 }

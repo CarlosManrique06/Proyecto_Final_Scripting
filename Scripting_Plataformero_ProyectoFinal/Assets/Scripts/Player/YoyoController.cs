@@ -2,39 +2,63 @@ using UnityEngine;
 
 public class YoyoController : MonoBehaviour
 {
-    public KeyCode attackKey = KeyCode.Mouse0; // tecla para lanzar el yoyo
-    public GameObject yoyoPrefab;              // prefab del yoyo (asignar en Inspector)
-    public GameObject yoyoVisual;
-    private Yoyo activeYoyo;                   // referencia al yoyo activo
-    private SwingController swingController;   // referencia al controlador de balanceo
+    [SerializeField] private KeyCode attackKey = KeyCode.Mouse0;
 
-    void Awake()
+
+    [SerializeField] private GameObject yoyoPrefab;
+    [SerializeField] private GameObject yoyoVisual;
+
+    private Yoyo _activeYoyo;
+    private SwingController _swingController;
+
+    
+ private bool CanLaunch 
+{
+    get { return !IsYoyoBusy && !IsSwinging; }
+}
+
+private bool IsYoyoBusy 
+{
+    get { return _activeYoyo != null && _activeYoyo.IsActive; }
+}
+
+private bool IsSwinging 
+{
+    get { return _swingController != null && (_swingController.IsSwinging || _swingController.IsLaunching); }
+}
+
+    private void Awake()
     {
-        swingController = GetComponent<SwingController>(); // obtiene el componente SwingController del jugador
+        _swingController = GetComponent<SwingController>();
     }
 
-    void Update()
+    private void Update()
     {
-        // si el jugador está balanceándose o lanzando, no permite otro lanzamiento
-        if (swingController != null && (swingController.IsSwinging || swingController.IsLaunching)) return;
+        UpdateHandVisual();
 
-        // si se presiona la tecla de ataque, intenta lanzar el yoyo
-        if (Input.GetKeyDown(attackKey)) { TryLaunch(); }
-
-        if(activeYoyo != null && activeYoyo.isActive == false && activeYoyo.isAnchored == false) yoyoVisual.SetActive(true);
-
-       
+        if (Input.GetKeyDown(attackKey) && CanLaunch)
+        {
+            TryLaunch();
+        }
     }
 
-    void TryLaunch()
+    
+    private void UpdateHandVisual()
     {
-        // si ya hay un yoyo activo, no lanza otro
-        yoyoVisual.SetActive(false);
-        if (activeYoyo != null && activeYoyo.isActive) return;
+        if (yoyoVisual == null) return;
 
-        // calcula la dirección hacia el mouse
+        // El visual de la mano se apaga si hay un yoyo 
+        bool shouldShowVisual = !IsYoyoBusy && !IsSwinging;
+
+        if (yoyoVisual.activeSelf != shouldShowVisual)
+        {
+            yoyoVisual.SetActive(shouldShowVisual);
+        }
+    }
+
+    private void TryLaunch()
+    {
         Vector2 aimDir = GetAimDirection();
-        // posición inicial del yoyo, un poco delante del jugador
         Vector2 spawnPos = (Vector2)transform.position + aimDir * 0.4f;
 
         if (YoyoPool.Instance != null)
@@ -42,32 +66,44 @@ public class YoyoController : MonoBehaviour
             GameObject go = YoyoPool.Instance.Get(spawnPos);
             if (go != null)
             {
-                activeYoyo = go.GetComponent<Yoyo>();
-                activeYoyo.Launch(aimDir, transform);
-
-                // Apagamos el visual de la mano inmediatamente al lanzar
-                if (yoyoVisual != null) yoyoVisual.SetActive(false);
+                _activeYoyo = go.GetComponent<Yoyo>();
+                _activeYoyo.Launch(aimDir, transform);
             }
         }
 
-        // ajusta la escala del jugador según la dirección (para voltear el sprite)
-        if (aimDir.x != 0)
-            transform.localScale = new Vector3(aimDir.x < 0 ? -1f : 1f, 1f, 1f);
+        UpdatePlayerDirection(aimDir);
     }
 
-    Vector2 GetAimDirection()
+    private void UpdatePlayerDirection(Vector2 aimDir)
     {
-        // convierte la posición del mouse a coordenadas del mundo
+        if (Mathf.Abs(aimDir.x) > 0.1f)
+        {
+            float direction = aimDir.x < 0 ? -1f : 1f;
+            transform.localScale = new Vector3(direction, 1f, 1f);
+        }
+    }
+
+    private Vector2 GetAimDirection()
+    {
+        if (Camera.main == null) return Vector2.right;
+
         Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mouseWorld.z = 0f;
 
-        // calcula la dirección normalizada hacia el mouse
         Vector2 dir = (mouseWorld - transform.position).normalized;
 
-        // si la dirección es muy pequeña, usa izquierda/derecha según la escala del jugador
-        if (dir.magnitude < 0.01f)
+        // Si el mouse está sobre el jugador, lanzamos hacia donde mira el sprite
+        if (dir.sqrMagnitude < 0.001f)
+        {
             dir = transform.localScale.x >= 0 ? Vector2.right : Vector2.left;
+        }
 
-        return dir; // devuelve la dirección final
+        return dir;
+    }
+
+   
+    public void SetActiveYoyo(Yoyo yoyo)
+    {
+        _activeYoyo = yoyo;
     }
 }

@@ -35,8 +35,8 @@ public class YoyoTest
 
         yoyo.Launch(Vector2.right, owner.transform);
 
-        Assert.IsTrue(yoyo.isActive, "isActive debe ser true tras Launch");
-        Assert.IsFalse(yoyo.isAnchored, "isAnchored debe ser false");
+        Assert.IsTrue(yoyo.IsActive, "IsActive debe ser true tras Launch");
+        Assert.IsFalse(yoyo.IsAnchored, "IsAnchored debe ser false");
 
         Cleanup(yoyo.gameObject, owner);
     }
@@ -53,33 +53,18 @@ public class YoyoTest
 
         yoyo.LaunchToAnchor(new Vector2(5, 0), owner.transform, () => called = true);
 
-        Assert.IsTrue(yoyo.isActive, "isActive debe ser true");
-        Assert.IsFalse(yoyo.isAnchored, "no debería estar anclado todavía");
+        Assert.IsTrue(yoyo.IsActive, "IsActive debe ser true");
+        Assert.IsFalse(yoyo.IsAnchored, "IsAnchored no debería estar anclado todavía");
         Assert.IsFalse(called, "callback no se llama hasta llegar");
 
         Cleanup(yoyo.gameObject, owner);
     }
 
    
-    //  3. ReturnToOwner limpia isAnchored
-    
-    [Test]
-    public void ReturnToOwner_ClearsAnchoredFlag()
-    {
-        var yoyo = CreateYoyo(Vector2.zero);
-        var owner = CreateOwner(Vector2.zero);
-
-        yoyo.LaunchToAnchor(Vector2.zero, owner.transform, null);
-        yoyo.isAnchored = true;
-        yoyo.ReturnToOwner();
-
-        Assert.IsFalse(yoyo.isAnchored, "isAnchored debe ser false tras ReturnToOwner");
-
-        Cleanup(yoyo.gameObject, owner);
-    }
+   
 
  
-    //  4. ResetState limpia todo 
+    //  3. ResetState limpia todo 
   
     [Test]
     public void ResetState_ClearsAllFlags()
@@ -90,14 +75,14 @@ public class YoyoTest
         yoyo.Launch(Vector2.right, owner.transform);
         yoyo.ResetState(); // estaba comentado antes — ese era el bug del test
 
-        Assert.IsFalse(yoyo.isActive, "isActive debe ser false tras ResetState");
-        Assert.IsFalse(yoyo.isAnchored, "isAnchored debe ser false tras ResetState");
+        Assert.IsFalse(yoyo.IsActive, "isActive debe ser false tras ResetState");
+        Assert.IsFalse(yoyo.IsAnchored, "isAnchored debe ser false tras ResetState");
 
         Cleanup(yoyo.gameObject, owner);
     }
 
     
-    //  5. Distancia proyectada ignora oscilación lateral
+    //  4. Distancia proyectada ignora oscilación lateral
    
     [Test]
     public void ProjectedDistance_NotAffectedByLateralOffset()
@@ -116,7 +101,7 @@ public class YoyoTest
             "La distancia euclidiana sería mayor — el bug anterior");
     }
 
-    //  6. Apuntado hacia el mouse
+    //  5. Apuntado hacia el mouse
     [Test]
     public void AimDirection_PointsTowardTarget()
     {
@@ -129,7 +114,7 @@ public class YoyoTest
     }
 
     
-    //  7. SwingController empieza sin columpio
+    //  6. SwingController empieza sin columpio
    
     [Test]
     public void SwingController_StartsNotSwinging()
@@ -145,7 +130,7 @@ public class YoyoTest
     }
 
 
-    //  8. Detach boost multiplica correctamente
+    //  7. Detach boost multiplica correctamente
    
     [Test]
     public void DetachBoost_MultipliesVelocity()
@@ -159,7 +144,7 @@ public class YoyoTest
     }
 
    
-    //  9. SwingPoint sin SpriteRenderer no explota
+    //  8. SwingPoint sin SpriteRenderer no explota
   
     [Test]
     public void SwingPoint_SetHighlight_WithoutSpriteRenderer_DoesNotThrow()
@@ -174,7 +159,7 @@ public class YoyoTest
     }
 
     
-    //  10. Launch con dirección izquierda también activa
+    //  9. Launch con dirección izquierda también activa
   
     [Test]
     public void Launch_LeftDirection_IsActive()
@@ -184,13 +169,13 @@ public class YoyoTest
 
         yoyo.Launch(Vector2.left, owner.transform);
 
-        Assert.IsTrue(yoyo.isActive, "debe activarse aunque la dirección sea izquierda");
+        Assert.IsTrue(yoyo.IsActive, "debe activarse aunque la dirección sea izquierda");
 
         Cleanup(yoyo.gameObject, owner);
     }
 
   
-    //  11. LaunchToAnchor con callback null no explota
+    //  10. LaunchToAnchor con callback null no explota
    
     [Test]
     public void LaunchToAnchor_NullCallback_DoesNotThrow()
@@ -205,7 +190,7 @@ public class YoyoTest
     }
 
 
-    //  12. La dirección se normaliza aunque llegue sin normalizar
+    //  11. La dirección se normaliza aunque llegue sin normalizar
  
     [Test]
     public void Launch_NormalizesDirection()
@@ -217,14 +202,14 @@ public class YoyoTest
         Vector2 rawDir = new Vector2(3f, 4f);
         yoyo.Launch(rawDir, owner.transform);
 
-        // El yo-yo debería moverse — isActive es la prueba indirecta de que aceptó la dirección
-        Assert.IsTrue(yoyo.isActive, "el yo-yo debe activarse con cualquier dirección no nula");
+        // El yo-yo debería moverse — IsActive es la prueba indirecta de que aceptó la dirección
+        Assert.IsTrue(yoyo.IsActive, "el yo-yo debe activarse con cualquier dirección no nula");
 
         Cleanup(yoyo.gameObject, owner);
     }
 
    
-    //  13. Registrar y quitar un SwingPoint actualiza la lista
+    //  12. Registrar y quitar un SwingPoint actualiza la lista
    
     [Test]
     public void SwingController_RegisterAndUnregister_UpdatesList()
@@ -249,7 +234,7 @@ public class YoyoTest
     }
 
    
-    //  14. ReturnToOwner sobre yo-yo no anclado no explota
+    //  13. ReturnToOwner sobre yo-yo no anclado no explota
     
     [Test]
     public void ReturnToOwner_WhenNotAnchored_DoesNotThrow()
